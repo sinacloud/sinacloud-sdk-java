@@ -1,0 +1,2 @@
+# sinacloud-sdk-java
+此sdk为sinacloud容器云的java服务，sdk中封装了sinacloud的kvdb客户端
