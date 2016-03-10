@@ -26,8 +26,8 @@
     	</licenses>
 
     	<scm>
-        		<connection>scm:git:https://github.com/sinacloud/sinacloud-sdk-java.git</connection>
-        		<developerConnection>scm:git:git@https://github.com/sinacloud/sinacloud-sdk-java.git</developerConnection>
+        		<connection>scm:git:git://github.com:sinacloud/sinacloud-sdk-java.git</connection>
+        		<developerConnection>scm:git:git@github.com:sinacloud/sinacloud-sdk-java.git</developerConnection>
         		<url>https://github.com/sinacloud/sinacloud-sdk-java</url>
    		<tag>HEAD</tag>
   	</scm>
