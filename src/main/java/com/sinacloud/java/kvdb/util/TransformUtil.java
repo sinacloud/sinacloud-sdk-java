@@ -182,7 +182,7 @@ public class TransformUtil {
 	/**
 	 * 将字符串包装成ByteBuffer类型
 	 * @param value
-	 * @return
+	 * @return bb
 	 * @throws UnsupportedEncodingException 
 	 */
 	public static ByteBuffer wrap(String value) throws UnsupportedEncodingException {
@@ -194,7 +194,7 @@ public class TransformUtil {
 	/**
 	 * 将Map<String,String>包装成 Map<ByteBuffer,ByteBuffer>类型
 	 * @param attributes
-	 * @return
+	 * @return wrappedAttributes
 	 * @throws UnsupportedEncodingException 
 	 */
 	public static Map<ByteBuffer, ByteBuffer> encodeAttributes(Map<String, String> attributes) throws UnsupportedEncodingException {
@@ -211,7 +211,7 @@ public class TransformUtil {
 	
 	/**
 	 * 返回一个空的属性包装
-	 * @return
+	 * @return map
 	 * @throws UnsupportedEncodingException 
 	 */
 	public static Map<ByteBuffer,ByteBuffer> emptyAttributes() throws UnsupportedEncodingException {
@@ -221,7 +221,7 @@ public class TransformUtil {
 	/**
 	 * 将ByteBuffer对象转换为byte[]
 	 * @param buffer
-	 * @return
+	 * @return bytes
 	 */
 	public static byte[] decodeBuffer(ByteBuffer buffer) {
 		byte[] bytes = new byte[buffer.limit()];
@@ -238,7 +238,7 @@ public class TransformUtil {
 	 * double 算作8个字节<br/>
 	 * byte[]根据具体大小返回对于的字节数
 	 * @param value
-	 * @return
+	 * @return int
 	 */
 	@SuppressWarnings("unused")
 	private static int getValueSize(Object value) {
@@ -266,7 +266,7 @@ public class TransformUtil {
 	/**
 	 * 获取当前key的大小(不包含accesskey前缀)
 	 * @param key
-	 * @return
+	 * @return int
 	 */
 	@SuppressWarnings("unused")
 	private static int getKeySize(String key) {
@@ -279,7 +279,7 @@ public class TransformUtil {
 	/**
 	 * 根据start key生成stop key
 	 * @param startKey
-	 * @return
+	 * @return keyBytes
 	 */
 	public static byte[] generateStopKey(ByteBuffer startKey) {
 		byte[] keyBytes = new byte[MAX_KEY_LENGTH];
@@ -297,7 +297,7 @@ public class TransformUtil {
 	/**
 	 * 生成stop key，假设起始key为aaa,则stopkey是aab
 	 * @param startKey
-	 * @return
+	 * @return bytes
 	 */
 	public static byte[] caclStopKey(String startKey) {
 		try {
@@ -310,7 +310,7 @@ public class TransformUtil {
 	/**
 	 * 生成stop key，假设起始key为aaa,则stopkey是aab
 	 * @param startKey
-	 * @return
+	 * @return bytes
 	 */
 	public static byte[] caclStopKey(ByteBuffer startKey) {
 		if(startKey==null) {
