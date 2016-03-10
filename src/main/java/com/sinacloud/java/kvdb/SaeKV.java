@@ -275,7 +275,7 @@ public class SaeKV {
 	/**
 	 * 对用户传入的指定的key增加accesskey_ 前缀
 	 * @param key
-	 * @return
+	 * @return key
 	 */
 	private String addAccessKeyPrefix(String key) {
 		return key;
@@ -284,7 +284,7 @@ public class SaeKV {
 	/**
 	 * 将accesskey_前缀去掉
 	 * @param key
-	 * @return
+	 * @return key
 	 */
 	private String removeAccessKeyPrefix(String key) {
 		return key;
@@ -828,7 +828,7 @@ public class SaeKV {
 	 *            
 	 * 
 	 * @param executor
-	 * @return
+	 * @return T
 	 */
 	private <T> T execute(AbstractThriftExecutor executor)  {
 		checkInitialized();
@@ -874,7 +874,7 @@ public class SaeKV {
 	 * 创建链接，会在ip中便利所有可用的ip直到找到一个合适的ip并创建连接，如果所有的ip都不可用则抛出异常</br>
 	 * 对于一个ip会尝试连接三次，如果不成功则将这个ip删除并放到一个定时器中，定时器的执行时间是30分钟</br>
 	 * 如果所有步骤执行成功则返回TTransport对象
-	 * @return
+	 * @return kv
 	 */
 	public KeyValue createConn() {
 		TTransport transport = null;
@@ -1107,7 +1107,7 @@ public class SaeKV {
 	 * 保存一个指定的值，支持long,double,byte[],boolean四种类型
 	 * @param key
 	 * @param value
-	 * @return
+	 * @return boolean
 	 */
 	private boolean storeVlaue(String key,Object value) {
 		Object result = execute(new SingleExecutor(new KeyValue(key,value)) {			
@@ -1400,7 +1400,7 @@ public class SaeKV {
 
 	/**
 	 * 返回错误消息
-	 * @return
+	 * @return 错误码
 	 */
 	public String getErrMsg() {
 		return this.errMsg;

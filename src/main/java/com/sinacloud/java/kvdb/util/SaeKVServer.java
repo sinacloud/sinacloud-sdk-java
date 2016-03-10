@@ -136,7 +136,7 @@ public class SaeKVServer implements TKvdbService.Iface {
 	 * 对ID进行验证，如果ID为空则重新验证ak和sk，并生成一个UUID和ak关联
 	 * 下次通过UUID获取到ak并返回
 	 * @param kp
-	 * @return
+	 * @return pair
 	 */
 	@Override
 	public KeyPair auth(KeyPair kp) {
@@ -176,7 +176,7 @@ public class SaeKVServer implements TKvdbService.Iface {
 	 * 计算签名，从KeyPair对象中获取accesskey和timestamp，用这两个值组成内容，然后再获得secretkey
 	 * 最后获得签名的内容。最后从KeyPair中获得客户端签名的内容，如果相等则签名通过否则抛错
 	 * @param kp
-	 * @return
+	 * @return boolean
 	 */
 	private boolean checkAuthorization(KeyPair kp) {
 		String accesskey = kp.getAccesskey();
@@ -198,7 +198,7 @@ public class SaeKVServer implements TKvdbService.Iface {
 	/**
 	 * 根据ak获取sk
 	 * @param accesskey
-	 * @return
+	 * @return secretkey
 	 */
 	private String getSecretkey(String accesskey) {
 		//return connMysql(accesskey);
@@ -208,7 +208,7 @@ public class SaeKVServer implements TKvdbService.Iface {
 	/**
 	 * 通过mysql后去secretkey
 	 * @param ak
-	 * @return
+	 * @return secretkey
 	 */
 	@SuppressWarnings("unused")
 	private static String connMysql(String ak) {
@@ -236,7 +236,7 @@ public class SaeKVServer implements TKvdbService.Iface {
 	/**
 	 * 通过memcache获取secretkey
 	 * @param accesskey
-	 * @return
+	 * @return secretkey
 	 */
 	private static String connMemcache(String accesskey) {
 		String content = (String)mc.get(accesskey);
@@ -271,7 +271,7 @@ public class SaeKVServer implements TKvdbService.Iface {
 	
 	/**
 	 * 从线程的缓存中获取HTable实例
-	 * @return
+	 * @return table
 	 * @throws IOException
 	 */
 	private HTable getTable() throws IOException {
@@ -292,7 +292,7 @@ public class SaeKVServer implements TKvdbService.Iface {
 	/**
 	 * 将accesskey_前缀去掉
 	 * @param key
-	 * @return
+	 * @return key
 	 */
 	private String removeAccessKeyPrefix(String key) {
 		if(key==null || key.length()<=11) {
@@ -314,7 +314,7 @@ public class SaeKVServer implements TKvdbService.Iface {
 	/**
 	 * 根据token获取accesskey
 	 * @param kp
-	 * @return
+	 * @return accesskey
 	 * @throws AuthExpire 
 	 */
 	private String getAccesskey(KeyPair kp) throws AuthExpire {
