@@ -1,14 +1,44 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>com.sinacloud.java</groupId>
 	<artifactId>java-sdk</artifactId>
-	<version>1.0-SNAPSHOT</version>
+	<version>1.0</version>
 	<packaging>jar</packaging>
 
 	<name>java-sdk</name>
-	<url>http://maven.apache.org</url>
+	<url>https://github.com/sinacloud/sinacloud-sdk-java</url>
+	<description>the sdk  for sinacloud sc2 servies</description>
+    	<inceptionYear>2016</inceptionYear>
+
+	<parent>
+		<groupId>org.sonatype.oss</groupId>
+	        	<artifactId>oss-parent</artifactId>
+	        	<version>7</version>
+	</parent>
+
+    	<licenses>
+        		<license>
+            			<name>The Apache Software License, Version 2.0</name>
+            			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+            			<distribution>repo</distribution>
+        		</license>
+    	</licenses>
+
+    	<scm>
+        		<connection>scm:git:https://github.com/sinacloud/sinacloud-sdk-java.git</connection>
+        		<developerConnection>scm:git:git@https://github.com/sinacloud/sinacloud-sdk-java.git</developerConnection>
+        		<url>https://github.com/sinacloud/sinacloud-sdk-java</url>
+   		<tag>HEAD</tag>
+  	</scm>
+
+    	<developers>
+        		<developer>
+	            		<id>sinacloud-java-sdk</id>
+	            		<name>sinacloud-java-sdk</name>
+	            		<email>tmdtmdd@sina.com</email>
+        		</developer>
+    	</developers>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
