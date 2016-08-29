@@ -10,6 +10,7 @@ Maven 项目可以通过项目的 pom.xml 直接引入依赖。
     <artifactId>java-sdk</artifactId>
     <version>{version}</version>
 </dependency>
+```
 
 其中 {version} 为最新的 SDK 版本，你可以在 http://mvnrepository.com/artifact/com.sinacloud.java/java-sdk 找到最新的版本号。
 
