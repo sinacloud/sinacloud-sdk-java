@@ -27,7 +27,7 @@ import com.sinacloud.storage.model.ObjectFileList;
 import com.sinacloud.storage.model.ObjectResponseProcesser;
 
 /**
- *  SinaCloud 容器应用 storage 服务接口。
+ *  新浪云 容器应用 Storage 服务接口。
  *  <p>
  *  Storage是新浪云为开发者提供的分布式对象存储服务，旨在利用新浪云在分布式以及网络技术方面的优势为开发者提供安全、简单、高效的存储服务。<br>
  *  Storage支持文本、多媒体、二进制等任何类型的数据的存储。
@@ -44,7 +44,7 @@ import com.sinacloud.storage.model.ObjectResponseProcesser;
  *  errno：-201 bucket已经创建，请勿重复创建<br>
  *  errno：-202 bucket未找到，或者bucket已经被删除了，检查bucket是否正确<br>
  *  errno：-203 bucket不为空，如果要删除bucket请先删除bucket中的object，保证bucket为空<br>
- *  errno：-204 达到bucket创建数量的上线，不能在创建bucket<br>
+ *  errno：-204 达到bucket创建数量的上限，不能在创建bucket<br>
  *  errno：-301 object不存在这个bucket中，或者已经被删除了<br>
  * 
  * @author nero
@@ -127,9 +127,7 @@ public class StorageClient extends StorageBase implements Storage {
 	private boolean checkParameter(String parm1, String parm2) {
 		// 不用短路 或 ，因为需要对两个参数都检查是否为null
 		if (parm1 == null | parm2 == null) {
-			errMsg = ERROR_MSG_101;
-			errNo = ERROR_NUM_101;
-			return false;
+			throw new RuntimeException(ERROR_MSG_101);
 		}
 		return true;
 	}
@@ -143,9 +141,7 @@ public class StorageClient extends StorageBase implements Storage {
 	 */
 	private boolean checkParameter(String parm) {
 		if (parm == null) {
-			errMsg = ERROR_MSG_101;
-			errNo = ERROR_NUM_101;
-			return false;
+			throw new RuntimeException(ERROR_MSG_101);
 		}
 		return true;
 	}
@@ -205,13 +201,11 @@ public class StorageClient extends StorageBase implements Storage {
 			String ssig = StorageUtils.calcSignature(signheader, secretKey);
 			conn.setRequestProperty("Authorization", "SWS " + accessKey+ ":" + ssig);
 		} catch (MalformedURLException e) {
-			this.errMsg = ERROR_MSG_102;
-			this.errNo = ERROR_NUM_102;
 			logger.error(ERROR_MSG_102, e);
+			throw new RuntimeException(ERROR_MSG_102);
 		} catch (IOException e) {
-			this.errMsg = ERROR_MSG_103;
-			this.errNo = ERROR_NUM_103;
 			logger.error(ERROR_MSG_103, e);
+			throw new RuntimeException(ERROR_MSG_103);
 		}
 		return conn;
 	} 
@@ -303,7 +297,7 @@ public class StorageClient extends StorageBase implements Storage {
 	@Override
 	public boolean createBucket(String bucketName) {
 		if(!checkParameter(bucketName)){
-			return false;
+			throw new RuntimeException(ERROR_MSG_101);
 		}
 		String url = baseurl + this.appName + "/" + bucketName + "/";
 		HttpURLConnection conn = getConnection(url, internal_timeout, PUT, getPath(url), null);
@@ -311,24 +305,17 @@ public class StorageClient extends StorageBase implements Storage {
 		try {
 			responseProcesser = doBucketOperation(conn,bucketName);
 			if (responseProcesser.getResponseCode() == 201) {
-				this.errMsg =ERROR_MSG_0;
-				this.errNo = ERROR_NUM_0;
 				return true;
 			}
 			if (responseProcesser.getResponseCode() == 202) {
-				this.errMsg = ERROR_MSG_201;
-				this.errNo = ERROR_NUM_201;
-				return false;
+				throw new RuntimeException(ERROR_MSG_201);
 			}
 			if (responseProcesser.getResponseCode() == 413) {
-				this.errMsg =ERROR_MSG_204;
-				this.errNo = ERROR_NUM_204;
-				return false;
+				throw new RuntimeException(ERROR_MSG_204);
 			}
 		} catch (IOException e) {
-			this.errMsg = ERROR_MSG_103;
-			this.errNo = ERROR_NUM_103;
 			logger.error(ERROR_MSG_103, e);
+			throw new RuntimeException(ERROR_MSG_103);
 		}
 		return false;
 	}
@@ -341,7 +328,7 @@ public class StorageClient extends StorageBase implements Storage {
 	@Override
 	public Bucket getBucketInfo(String bucketName){
 		if(!checkParameter(bucketName)){
-			return null;
+			throw new RuntimeException(ERROR_MSG_101);
 		}
 		String url = baseurl + this.appName + "/" + bucketName + "/";
 		HttpURLConnection conn = getConnection(url, internal_timeout,HEAD, getPath(url), null);
@@ -350,11 +337,9 @@ public class StorageClient extends StorageBase implements Storage {
 			bucketResponseProcesser = doBucketOperation(conn,bucketName);
 			return bucketResponseProcesser.getBucketList().get(0);
 		} catch (IOException e) {
-			this.errMsg = ERROR_MSG_202;
-			this.errNo = ERROR_NUM_202;
 			logger.error(ERROR_MSG_202, e);
+			throw new RuntimeException(ERROR_MSG_202);
 		}
-		return new Bucket();
 	}
 	
 	/**
@@ -376,9 +361,8 @@ public class StorageClient extends StorageBase implements Storage {
 			bl.setBucketsUsedSize(Integer.parseInt(bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.ALLACCOUNTUSEDSIZE).get(0).toString()));
 			bl.setTimestamp(bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.TIMESTEMP).get(0).toString().trim());
 		}catch(IOException e){
-			this.errMsg = ERROR_MSG_103;
-			this.errNo = ERROR_NUM_103;
 			logger.error(ERROR_MSG_103, e);
+			throw new RuntimeException(ERROR_MSG_103);
 		}
 		return bl;
 	}
@@ -402,7 +386,7 @@ public class StorageClient extends StorageBase implements Storage {
 	@Override
 	public ObjectFileList getBucket(String bucketName, String prefix) {
 		if(!checkParameter(bucketName)){
-			return null;
+			throw new RuntimeException(ERROR_MSG_101);
 		}
 		String url  = baseurl+this.appName+"/"+bucketName+"/";
 		if(prefix!=null && !"".equals(prefix)){
@@ -419,9 +403,8 @@ public class StorageClient extends StorageBase implements Storage {
 			List<String> list = Arrays.asList(new String(objectResponseProcesser.getBodyContent()).split("\n"));
 			ofl.setObjectList(list);
 		} catch (IOException e) {
-			this.errMsg = ERROR_MSG_103;
-			this.errNo = ERROR_NUM_103;
 			logger.error(ERROR_MSG_103, e);
+			throw new RuntimeException(ERROR_MSG_103);
 		}
 		return ofl;
 	}
@@ -433,7 +416,7 @@ public class StorageClient extends StorageBase implements Storage {
 	@Override
 	public boolean deleteBucket(String bucketName) {
 		if(!checkParameter(bucketName)){
-			return false;
+			throw new RuntimeException(ERROR_MSG_101);
 		}
 		String url  = baseurl+this.appName+"/"+bucketName+"/";
 		BucketResponseProcesser bucketResponseProcesser = null;
@@ -441,19 +424,14 @@ public class StorageClient extends StorageBase implements Storage {
 		try {
 			bucketResponseProcesser = doBucketOperation(conn);
 			if(bucketResponseProcesser.getResponseCode() == 204){
-				this.errMsg = ERROR_MSG_0;
-				this.errNo = ERROR_NUM_0;
 				return true;
 			}
 			if(bucketResponseProcesser.getResponseCode() == 409){
-				this.errMsg = ERROR_MSG_203;
-				this.errNo = ERROR_NUM_203;
-				return false;
+				throw new RuntimeException(ERROR_MSG_203);
 			}
 		} catch (IOException e) {
-			this.errMsg = ERROR_MSG_202;
-			this.errNo = ERROR_NUM_202;
 			logger.error(ERROR_MSG_202, e);
+			throw new RuntimeException(ERROR_MSG_202);
 		}
 		return false;
 	}
@@ -470,7 +448,7 @@ public class StorageClient extends StorageBase implements Storage {
 	@Override
 	public boolean putObjectFile(String bucketName, String fileName, byte[] content, Map<String, String> map) {
 		if(!checkParameter(bucketName,fileName)){
-			return false;
+			throw new RuntimeException(ERROR_MSG_101);
 		}
 		String url = baseurl+this.appName+"/"+bucketName+"/"+fileName;
 		HttpURLConnection conn = getConnection(url, internal_timeout, PUT, getPath(url), map);
@@ -478,14 +456,11 @@ public class StorageClient extends StorageBase implements Storage {
 		try {
 			objectResponseProcesser = doObjectOperation(conn,content);
 			if(objectResponseProcesser.getResponseCode() == 201){
-				this.errMsg = ERROR_MSG_0;
-				this.errNo = ERROR_NUM_0;
 				return true;
 			}
 		} catch (IOException e) {
-			this.errMsg = ERROR_MSG_202;
-			this.errNo = ERROR_NUM_202;
 			logger.error(ERROR_MSG_202, e);
+			throw new RuntimeException(ERROR_MSG_202);
 		}
 		return false;
 	}
@@ -500,14 +475,10 @@ public class StorageClient extends StorageBase implements Storage {
 	@Override
 	public boolean putObjectFile(String bucketName, String fileName, File file, Map<String, String> map) {
 		if(!checkParameter(bucketName,fileName)){
-			this.errMsg = ERROR_MSG_101;
-			this.errNo = ERROR_NUM_101;
-			return false;
+			throw new RuntimeException(ERROR_MSG_101);
 		}
 		if(!file.exists()){
-			this.errMsg=ERROR_MSG_104;
-			this.errNo = ERROR_NUM_104;
-			return false;
+			throw new RuntimeException(ERROR_MSG_104);
 		}
 		try {
 			FileInputStream fis = new FileInputStream(file);
@@ -522,15 +493,12 @@ public class StorageClient extends StorageBase implements Storage {
 			byte[] content = bos.toByteArray();
 			return putObjectFile(bucketName,fileName,content,map);
 		} catch (FileNotFoundException e) {
-			this.errMsg=ERROR_MSG_301;
-			this.errNo = ERROR_NUM_301;
 			logger.error(ERROR_MSG_301);
+			throw new RuntimeException(ERROR_MSG_301);
 		} catch (IOException e) {
-			this.errMsg = ERROR_MSG_202;
-			this.errNo = ERROR_NUM_202;
 			logger.error(ERROR_MSG_202, e);
+			throw new RuntimeException(ERROR_MSG_202);
 		}
-		return false;
 	}
 
 	/**
@@ -554,9 +522,8 @@ public class StorageClient extends StorageBase implements Storage {
 			of.setContent(objectResponseProcesser.getBodyContent());
 			of.setFileSize(Integer.parseInt(objectResponseProcesser.getResponseHeaders().get("Content-Length").get(0)));
 		} catch (IOException e) {
-			this.errMsg=ERROR_MSG_301;
-			this.errNo = ERROR_NUM_301;
 			logger.error(ERROR_MSG_301);
+			throw new RuntimeException(ERROR_MSG_301);
 		}
 		return of;
 	}
@@ -570,7 +537,7 @@ public class StorageClient extends StorageBase implements Storage {
 	@Override
 	public boolean deleteObject(String bucketName, String objectFileName) {
 		if(!checkParameter(bucketName, objectFileName)){
-			return false;
+			throw new RuntimeException(ERROR_MSG_101);
 		}
 		String url = baseurl+this.appName + "/" + bucketName + "/" +objectFileName;
 		ObjectResponseProcesser objectResponseProcesser = null;
@@ -578,19 +545,14 @@ public class StorageClient extends StorageBase implements Storage {
 		try {
 			objectResponseProcesser = doObjectOperation(conn);
 			if(objectResponseProcesser.getResponseCode() == 204){
-				this.errMsg = ERROR_MSG_0;
-				this.errNo = ERROR_NUM_0;
 				return true;
 			}
 			if(objectResponseProcesser.getResponseCode() == 404){
-				this.errMsg=ERROR_MSG_301;
-				this.errNo = ERROR_NUM_301;
-				return false;
+				throw new RuntimeException(ERROR_MSG_301);
 			}
 		} catch (IOException e) {
-			this.errMsg=ERROR_MSG_301;
-			this.errNo = ERROR_NUM_301;
 			logger.error(ERROR_MSG_301);
+			throw new RuntimeException(ERROR_MSG_301);
 		}
 		return false;
 	}
