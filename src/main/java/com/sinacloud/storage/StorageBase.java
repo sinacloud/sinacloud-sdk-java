@@ -25,7 +25,7 @@ public class StorageBase{
 	/**
 	 * storage 请求地址
 	 */
-	protected static String baseurl = "http://api.i.sinas3.com:81/v1/SAE_";
+	protected static String baseurl = "https://api.sinas3.com/v1/SAE_";
 	
 	/**
 	 * 发送请求时所需的access key

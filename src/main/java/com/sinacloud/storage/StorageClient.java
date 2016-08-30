@@ -17,6 +17,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import org.apache.log4j.Logger;
 
 import com.sinacloud.storage.model.Bucket;
@@ -105,7 +107,7 @@ public class StorageClient extends StorageBase implements Storage {
 	}
 	
 	public StorageClient(String appName,String accessKey,String secertKey){
-		if(StorageUtils.isEmpty(appName) || StorageUtils.isEmpty(accessKey) || StorageUtils.isEmpty(secertKey)){
+		if(!StorageUtils.isEmpty(appName) || !StorageUtils.isEmpty(accessKey) || !StorageUtils.isEmpty(secertKey)){
 			throw new RuntimeException("please check your param, at least one param,At least one parameter is missing!");
 		}
 		this.appName = appName;
@@ -167,13 +169,13 @@ public class StorageClient extends StorageBase implements Storage {
 	 * @param propMap 需要额外在头部添加的属性
 	 * @return
 	 */
-	protected HttpURLConnection getConnection(String url , int timeout, String method,String path,Map<String,String> propMap){
-		HttpURLConnection conn = null;
+	protected HttpsURLConnection getConnection(String url , int timeout, String method,String path,Map<String,String> propMap){
+		HttpsURLConnection conn = null;
 		URL _url = null;
 		int code = 0;
 		try {
 			_url = new URL(url);
-			conn = (HttpURLConnection)_url.openConnection();
+			conn = (HttpsURLConnection)_url.openConnection();
 			conn.setConnectTimeout(timeout);
 			conn.setRequestMethod(method);
 			if(propMap != null && propMap.size() != 0){
@@ -201,11 +203,13 @@ public class StorageClient extends StorageBase implements Storage {
 			String ssig = StorageUtils.calcSignature(signheader, secretKey);
 			conn.setRequestProperty("Authorization", "SWS " + accessKey+ ":" + ssig);
 		} catch (MalformedURLException e) {
-			logger.error(ERROR_MSG_102, e);
-			throw new RuntimeException(ERROR_MSG_102);
+			e.printStackTrace();
+//			logger.error(ERROR_MSG_102, e);
+//			throw new RuntimeException(ERROR_MSG_102);
 		} catch (IOException e) {
-			logger.error(ERROR_MSG_103, e);
-			throw new RuntimeException(ERROR_MSG_103);
+			e.printStackTrace();
+//			logger.error(ERROR_MSG_103, e);
+//			throw new RuntimeException(ERROR_MSG_103);
 		}
 		return conn;
 	} 
@@ -216,9 +220,19 @@ public class StorageClient extends StorageBase implements Storage {
 	 * @return
 	 * @throws IOException
 	 */
-	private BucketResponseProcesser doBucketOperation(HttpURLConnection conn) throws IOException{
+	private BucketResponseProcesser doBucketOperation(HttpsURLConnection conn) throws IOException{
 		return doBucketOperation(conn,null);
 	}
+	
+//	private void printHeader(Map<String,List<String>> map){
+//		for(String k : map.keySet()){
+//			System.out.print(k+" : ");
+//			for(String v : map.get(k)){
+//				System.out.print(v + "  ");
+//			}
+//			System.out.println();
+//		}
+//	}
 	
 	/**
 	 * bucket相关操作
@@ -226,7 +240,7 @@ public class StorageClient extends StorageBase implements Storage {
 	 * @return
 	 * @throws IOException
 	 */
-	private BucketResponseProcesser doBucketOperation(HttpURLConnection conn,String bucketName) throws IOException{
+	private BucketResponseProcesser doBucketOperation(HttpsURLConnection conn,String bucketName) throws IOException{
 		BucketResponseProcesser bucketResponseProcesser = new BucketResponseProcesser();
 		conn.connect();
 		if(conn.getRequestMethod() != PUT && conn.getRequestMethod() != DELETE){
@@ -238,9 +252,9 @@ public class StorageClient extends StorageBase implements Storage {
 		if(bucketName != null){
 			Bucket bucket = new Bucket();
 			bucket.setBucketName(bucketName);
-			bucket.setBucketSize(Integer.parseInt(bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.USEDSIZE).get(0).toString()));
-			bucket.setObjectFilecount(Integer.parseInt(bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.OBJECTCOUNT).get(0).toString()));
-			bucket.setTimestamp(bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.TIMESTEMP).get(0).toString());
+			bucket.setBucketSize(Integer.parseInt(bucketResponseProcesser.getResponseHeaders().containsKey(MetaHeaders.USEDSIZE)?bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.USEDSIZE).get(0).toString():"0"));
+			bucket.setObjectFilecount(Integer.parseInt(bucketResponseProcesser.getResponseHeaders().containsKey(MetaHeaders.OBJECTCOUNT)?bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.OBJECTCOUNT).get(0).toString():"0"));
+			bucket.setTimestamp(bucketResponseProcesser.getResponseHeaders().containsKey(MetaHeaders.TIMESTEMP)?bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.TIMESTEMP).get(0).toString():"0");
 			List<Bucket> list = new ArrayList<Bucket>();
 			list.add(bucket);
 			bucketResponseProcesser.setBucketList(list);
@@ -300,7 +314,7 @@ public class StorageClient extends StorageBase implements Storage {
 			throw new RuntimeException(ERROR_MSG_101);
 		}
 		String url = baseurl + this.appName + "/" + bucketName + "/";
-		HttpURLConnection conn = getConnection(url, internal_timeout, PUT, getPath(url), null);
+		HttpsURLConnection conn = getConnection(url, internal_timeout, PUT, getPath(url), null);
 		BucketResponseProcesser responseProcesser = null;
 		try {
 			responseProcesser = doBucketOperation(conn,bucketName);
@@ -331,7 +345,7 @@ public class StorageClient extends StorageBase implements Storage {
 			throw new RuntimeException(ERROR_MSG_101);
 		}
 		String url = baseurl + this.appName + "/" + bucketName + "/";
-		HttpURLConnection conn = getConnection(url, internal_timeout,HEAD, getPath(url), null);
+		HttpsURLConnection conn = getConnection(url, internal_timeout,HEAD, getPath(url), null);
 		BucketResponseProcesser bucketResponseProcesser = null;
 		try {
 			bucketResponseProcesser = doBucketOperation(conn,bucketName);
@@ -349,7 +363,7 @@ public class StorageClient extends StorageBase implements Storage {
 	@Override
 	public BucketList listBuckets() {
 		String url = baseurl+this.appName + "/";
-		HttpURLConnection conn = getConnection(url, internal_timeout, GET, getPath(url), null);
+		HttpsURLConnection conn = getConnection(url, internal_timeout, GET, getPath(url), null);
 		BucketResponseProcesser bucketResponseProcesser = null;
 		BucketList bl = new BucketList();
 		try{
@@ -361,8 +375,9 @@ public class StorageClient extends StorageBase implements Storage {
 			bl.setBucketsUsedSize(Integer.parseInt(bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.ALLACCOUNTUSEDSIZE).get(0).toString()));
 			bl.setTimestamp(bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.TIMESTEMP).get(0).toString().trim());
 		}catch(IOException e){
-			logger.error(ERROR_MSG_103, e);
-			throw new RuntimeException(ERROR_MSG_103);
+//			logger.error(ERROR_MSG_103, e);
+//			throw new RuntimeException(ERROR_MSG_103);
+			e.printStackTrace();
 		}
 		return bl;
 	}
@@ -420,13 +435,13 @@ public class StorageClient extends StorageBase implements Storage {
 		}
 		String url  = baseurl+this.appName+"/"+bucketName+"/";
 		BucketResponseProcesser bucketResponseProcesser = null;
-		HttpURLConnection conn = getConnection(url, internal_timeout, DELETE, getPath(url), null);
+		HttpsURLConnection conn = getConnection(url, internal_timeout, DELETE, getPath(url), null);
 		try {
 			bucketResponseProcesser = doBucketOperation(conn);
 			if(bucketResponseProcesser.getResponseCode() == 204){
 				return true;
 			}
-			if(bucketResponseProcesser.getResponseCode() == 409){
+			if(bucketResponseProcesser.getResponseCode() == 404){
 				throw new RuntimeException(ERROR_MSG_203);
 			}
 		} catch (IOException e) {
