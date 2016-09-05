@@ -33,22 +33,31 @@ import com.sinacloud.storage.model.ObjectResponseProcesser;
  *  <p>
  *  Storage是新浪云为开发者提供的分布式对象存储服务，旨在利用新浪云在分布式以及网络技术方面的优势为开发者提供安全、简单、高效的存储服务。<br>
  *  Storage支持文本、多媒体、二进制等任何类型的数据的存储。
- *  使用方法，在容器环境中<br>
- *  StroageClient sc = new StroageClient();<br>
+ *  仅限容器环境中<br>
+ *  <p style="font-size:14px"> <b><i>
+ *  使用样例：<br>
+ *  StroageClient sc = new StroageClient(); // 这里是默认构造，如果不使用当前应用下的storage可以调用传参数构造器new StroageClient(appname,ak,sk)<br>
+ *  //创建bucket <br>
  *  sc.createBucket("example_bucket"');<br>
- *  sc.getErrmsg(); 获取错误的概要信息<br>
- *  sc.getErrno(); 获取错误码<br>
- *  errno： 0  成功<br>
- *  errno：-101 传入的参数为空 检查参数传入是否正确<br>
- *  errno：-102 URL访问异常，检查bucket和objectname是否正确，或者网络是否有异常<br>
- *  errno：-103 IO异常，检查下网络是否有问题，或者bucket和object是否存在<br>
- *  errno：-104 上传的文件不存在，检查下需要上传到storage的文件是否存在<br>
- *  errno：-201 bucket已经创建，请勿重复创建<br>
- *  errno：-202 bucket未找到，或者bucket已经被删除了，检查bucket是否正确<br>
- *  errno：-203 bucket不为空，如果要删除bucket请先删除bucket中的object，保证bucket为空<br>
- *  errno：-204 达到bucket创建数量的上限，不能在创建bucket<br>
- *  errno：-301 object不存在这个bucket中，或者已经被删除了<br>
- * 
+ *  //删除buckete <br>
+ *  sc.deleteBucket("example_bucket");<br>
+ *  //获取相应bucket信息<br>
+ *  Bucket bucket = sc.getBucketInfo();<br>
+ *  //列出所有的bucket信息<br>
+ *  BucketList bucketList = sc.listBuckets();<br>
+ *  //获取bucket下所有的文件列表<br>
+ *  ObjectFileList objectFileList = sc.getBucket("example_bucket");<br>
+ *  //获取bucket下所有以example_prefix为前缀的文件列表 <br>
+ *  ObjectFileList objectFileList = sc.getBucket("example_bucket","example_prefix");<br>
+ *  //在storage上写一个文件，最后的参数不需要可以传null<br>
+ *  sc.putObjectFile("example_bucket","filename","content".getBytes(),metaMap);<br>
+ *  //上传一个文件，最后的参数不需要可以传null <br>
+ *  sc.putObjectFile("example_bucket","filename",File,metaMap);<br>
+ *  //获取一个文件<br>
+ *  ObjectFile objcetFile = sc.getObject("example_bucket","filename");<br>
+ *  //删除一个文件<br>
+ *  sc.deleteObject("example_bucket","filename");<br>
+ *  </i></b></p>
  * @author nero
  */
 public class StorageClient extends StorageBase implements Storage {
@@ -167,9 +176,10 @@ public class StorageClient extends StorageBase implements Storage {
 	 * @param method 方法
 	 * @param path storage的domain路径 url的"_"之后的部分
 	 * @param propMap 需要额外在头部添加的属性
-	 * @return
+	 * @return HttpsURLConnection
+	 * @throws MalformedURLException IOException
 	 */
-	protected HttpsURLConnection getConnection(String url , int timeout, String method,String path,Map<String,String> propMap){
+	private HttpsURLConnection getConnection(String url , int timeout, String method,String path,Map<String,String> propMap){
 		HttpsURLConnection conn = null;
 		URL _url = null;
 		int code = 0;
@@ -203,13 +213,11 @@ public class StorageClient extends StorageBase implements Storage {
 			String ssig = StorageUtils.calcSignature(signheader, secretKey);
 			conn.setRequestProperty("Authorization", "SWS " + accessKey+ ":" + ssig);
 		} catch (MalformedURLException e) {
-			e.printStackTrace();
-//			logger.error(ERROR_MSG_102, e);
-//			throw new RuntimeException(ERROR_MSG_102);
+			logger.error(ERROR_MSG_102, e);
+			throw new RuntimeException(ERROR_MSG_102);
 		} catch (IOException e) {
-			e.printStackTrace();
-//			logger.error(ERROR_MSG_103, e);
-//			throw new RuntimeException(ERROR_MSG_103);
+			logger.error(ERROR_MSG_103, e);
+			throw new RuntimeException(ERROR_MSG_103);
 		}
 		return conn;
 	} 
@@ -217,7 +225,7 @@ public class StorageClient extends StorageBase implements Storage {
 	/**
 	 * bucket相关操作
 	 * @param conn
-	 * @return
+	 * @return BucketResponseProcesser
 	 * @throws IOException
 	 */
 	private BucketResponseProcesser doBucketOperation(HttpsURLConnection conn) throws IOException{
@@ -237,7 +245,7 @@ public class StorageClient extends StorageBase implements Storage {
 	/**
 	 * bucket相关操作
 	 * @param conn
-	 * @return
+	 * @return BucketResponseProcesser
 	 * @throws IOException
 	 */
 	private BucketResponseProcesser doBucketOperation(HttpsURLConnection conn,String bucketName) throws IOException{
@@ -265,7 +273,7 @@ public class StorageClient extends StorageBase implements Storage {
 	/**
 	 * object 相关的操作
 	 * @param conn
-	 * @return
+	 * @return ObjectResponseProcesser
 	 * @throws IOException
 	 */
 	private ObjectResponseProcesser doObjectOperation(HttpURLConnection conn) throws IOException{
@@ -276,7 +284,7 @@ public class StorageClient extends StorageBase implements Storage {
 	 * 处理object相关的操作
 	 * @param conn
 	 * @param content
-	 * @return
+	 * @return ObjectResponseProcesser
 	 * @throws IOException
 	 */
 	private ObjectResponseProcesser doObjectOperation(HttpURLConnection conn,byte[] content) throws IOException{
@@ -306,13 +314,13 @@ public class StorageClient extends StorageBase implements Storage {
 	/**
 	 * 创建一个新的bucket
 	 * @param bucketName
-	 * @return
+	 * @return 是否创建成功
+	 * @throws RuntimeException {"the value of parameter  can not be empty!","the bucket has created","reach the upper limit of creating buckets"}
+	 * @throws IOException
 	 */
 	@Override
 	public boolean createBucket(String bucketName) {
-		if(!checkParameter(bucketName)){
-			throw new RuntimeException(ERROR_MSG_101);
-		}
+		checkParameter(bucketName);
 		String url = baseurl + this.appName + "/" + bucketName + "/";
 		HttpsURLConnection conn = getConnection(url, internal_timeout, PUT, getPath(url), null);
 		BucketResponseProcesser responseProcesser = null;
@@ -337,13 +345,13 @@ public class StorageClient extends StorageBase implements Storage {
 	/**
 	 * 获取bucket相关的信息
 	 * @param bucketName
-	 * @return bucket
+	 * @return Bucket
+	 * @throws IOException
+	 * @throws RuntimeException "the value of parameter  can not be empty!"
 	 */
 	@Override
 	public Bucket getBucketInfo(String bucketName){
-		if(!checkParameter(bucketName)){
-			throw new RuntimeException(ERROR_MSG_101);
-		}
+		checkParameter(bucketName);
 		String url = baseurl + this.appName + "/" + bucketName + "/";
 		HttpsURLConnection conn = getConnection(url, internal_timeout,HEAD, getPath(url), null);
 		BucketResponseProcesser bucketResponseProcesser = null;
@@ -359,6 +367,7 @@ public class StorageClient extends StorageBase implements Storage {
 	/**
 	 * 列出当前用户下所有的bucket
 	 * @return BucketList
+	 * @throws IOException
 	 */
 	@Override
 	public BucketList listBuckets() {
@@ -375,9 +384,8 @@ public class StorageClient extends StorageBase implements Storage {
 			bl.setBucketsUsedSize(Integer.parseInt(bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.ALLACCOUNTUSEDSIZE).get(0).toString()));
 			bl.setTimestamp(bucketResponseProcesser.getResponseHeaders().get(MetaHeaders.TIMESTEMP).get(0).toString().trim());
 		}catch(IOException e){
-//			logger.error(ERROR_MSG_103, e);
-//			throw new RuntimeException(ERROR_MSG_103);
-			e.printStackTrace();
+			logger.error(ERROR_MSG_103, e);
+			throw new RuntimeException(ERROR_MSG_103);
 		}
 		return bl;
 	}
@@ -385,7 +393,9 @@ public class StorageClient extends StorageBase implements Storage {
 	/**
 	 * 列出提供的bucket下所有的object列表
 	 * @param bucketName
-	 * @return
+	 * @return BucketList
+	 * @throws RuntimeException "the value of parameter  can not be empty!"
+	 * @throws IOException
 	 */
 	@Override
 	public ObjectFileList getBucket(String bucketName) {
@@ -396,13 +406,13 @@ public class StorageClient extends StorageBase implements Storage {
 	 * 列出提供的bucket下所有以 prefix 为前缀的object列表
 	 * @param bucketName
 	 * @param prefix
-	 * @return
+	 * @return ObjectFileList
+	 * @throws RuntimeException "the value of parameter  can not be empty!"
+	 * @throws IOException
 	 */
 	@Override
 	public ObjectFileList getBucket(String bucketName, String prefix) {
-		if(!checkParameter(bucketName)){
-			throw new RuntimeException(ERROR_MSG_101);
-		}
+		checkParameter(bucketName);
 		String url  = baseurl+this.appName+"/"+bucketName+"/";
 		if(prefix!=null && !"".equals(prefix)){
 			url = url+"?prefix="+prefix;
@@ -427,12 +437,12 @@ public class StorageClient extends StorageBase implements Storage {
 	/**
 	 * 删除指定的bucket
 	 * @param bucketName
+	 * @throws RuntimeException {"the value of parameter  can not be empty!","the bucket is not null","the bucket not found or has remove"}
+	 * @return 是否删除成功
 	 */
 	@Override
 	public boolean deleteBucket(String bucketName) {
-		if(!checkParameter(bucketName)){
-			throw new RuntimeException(ERROR_MSG_101);
-		}
+		checkParameter(bucketName);
 		String url  = baseurl+this.appName+"/"+bucketName+"/";
 		BucketResponseProcesser bucketResponseProcesser = null;
 		HttpsURLConnection conn = getConnection(url, internal_timeout, DELETE, getPath(url), null);
@@ -453,25 +463,33 @@ public class StorageClient extends StorageBase implements Storage {
 
 
 	/**
-	 * 上传文件到指定的bucket下
+	 * 上传文件到指定的bucket下，content为你需要写入的内容，并且以byte[] 形式，map参数设置acl，如果没有可以直接传null<br>
+	 * 如果需要put到bucket下某个文件夹下请使用"aa/bb"的形式传入文件名
 	 * @param bucketName
 	 * @param fileName
 	 * @param content
 	 * @param map
-	 * @return
+	 * @return 是否上传成功
+	 * @throws RuntimeException {"the value of parameter  can not be empty!","the bucket not found or has remove"}
 	 */
 	@Override
 	public boolean putObjectFile(String bucketName, String fileName, byte[] content, Map<String, String> map) {
-		if(!checkParameter(bucketName,fileName)){
-			throw new RuntimeException(ERROR_MSG_101);
-		}
+		checkParameter(bucketName,fileName);
 		String url = baseurl+this.appName+"/"+bucketName+"/"+fileName;
 		HttpURLConnection conn = getConnection(url, internal_timeout, PUT, getPath(url), map);
 		ObjectResponseProcesser objectResponseProcesser = null;
 		try {
 			objectResponseProcesser = doObjectOperation(conn,content);
+//			System.out.println("=================");
+//			printHeader(objectResponseProcesser.getResponseHeaders());
+//			System.out.println("response code is : " + objectResponseProcesser.getResponseCode());
+//			System.out.println("response message is : "+ objectResponseProcesser.getResponseMessage());
+//			System.out.println("===================");
 			if(objectResponseProcesser.getResponseCode() == 201){
 				return true;
+			}
+			if(objectResponseProcesser.getResponseCode() == 404){
+				throw new RuntimeException(ERROR_MSG_202);
 			}
 		} catch (IOException e) {
 			logger.error(ERROR_MSG_202, e);
@@ -481,17 +499,17 @@ public class StorageClient extends StorageBase implements Storage {
 	}
 
 	/**
-	 * 上传文件到指定的bucket下
+	 * 上传文件到指定的bucket下，file需要已经上传到容器的某个位置，map参数设置acl，如果没有可以直接传null<br>
+	 * 如果需要put到bucket下某个文件夹下请使用"aa/bb"的形式传入文件名
 	 * @param bucketName
 	 * @param file
 	 * @param map
-	 * @return
+	 * @return 是否上传成功
+	 * @throws RuntimeException {"the value of parameter  can not be empty!","file does not exist","the bucket not found or has remove"}
 	 */
 	@Override
 	public boolean putObjectFile(String bucketName, String fileName, File file, Map<String, String> map) {
-		if(!checkParameter(bucketName,fileName)){
-			throw new RuntimeException(ERROR_MSG_101);
-		}
+		checkParameter(bucketName,fileName);
 		if(!file.exists()){
 			throw new RuntimeException(ERROR_MSG_104);
 		}
@@ -517,17 +535,16 @@ public class StorageClient extends StorageBase implements Storage {
 	}
 
 	/**
-	 * 获取提供的bucket下对应文件名的内容
+	 * 获取提供的bucket下对应文件名的内容，如果需要获取bucket下某个文件夹的文件请使用"aa/bb"的形式传入文件名
 	 * @param bucketName
 	 * @param objectFileName
-	 * @return
+	 * @return ObjectFile
+	 * @throws RuntimeException {"the value of parameter  can not be empty!","object file does not exist in the bucket or has removed"}
 	 */
 	@Override
 	public ObjectFile getObject(String bucketName, String objectFileName) {
 		ObjectFile of = new ObjectFile();
-		if(!checkParameter(bucketName, objectFileName)){
-			return of;
-		}
+		checkParameter(bucketName, objectFileName);
 		String url = baseurl+this.appName + "/" + bucketName + "/" +objectFileName;
 		ObjectResponseProcesser objectResponseProcesser = null;
 		HttpURLConnection conn = getConnection(url, internal_timeout, GET, getPath(url), null);
@@ -547,13 +564,12 @@ public class StorageClient extends StorageBase implements Storage {
 	 * 删除指定的object
 	 * @param bucketName
 	 * @param objectFileName
-	 * @return
+	 * @return ObjectFile
+	 * @throws RuntimeException {"the value of parameter  can not be empty!","object file does not exist in the bucket or has removed"}
 	 */
 	@Override
 	public boolean deleteObject(String bucketName, String objectFileName) {
-		if(!checkParameter(bucketName, objectFileName)){
-			throw new RuntimeException(ERROR_MSG_101);
-		}
+		checkParameter(bucketName, objectFileName);
 		String url = baseurl+this.appName + "/" + bucketName + "/" +objectFileName;
 		ObjectResponseProcesser objectResponseProcesser = null;
 		HttpURLConnection conn = getConnection(url, internal_timeout, DELETE, getPath(url), null);

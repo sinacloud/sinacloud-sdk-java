@@ -9,12 +9,25 @@ import java.util.Map;
  * @author  nero
  */
 public class BucketResponseProcesser {
-	private String errMsg;
-	private int errno;
+	/**
+	 * 返回的body信息
+	 */
 	private byte[] bodyContent;
+	/**
+	 * 返回的bucket列表
+	 */
 	private List<Bucket> bucketList;
+	/**
+	 * 返回信息码
+	 */
 	private int responseCode;
+	/**
+	 * 返回信息
+	 */
 	private String responseMessage;
+	/**
+	 * 返回请求头
+	 */
 	private Map<String,List<String>> responseHeaders;
 	public String getResponseMessage() {
 		return responseMessage;
@@ -23,18 +36,6 @@ public class BucketResponseProcesser {
 		this.responseMessage = responseMessage;
 	}
 	
-	public String getErrMsg() {
-		return errMsg;
-	}
-	public void setErrMsg(String errMsg) {
-		this.errMsg = errMsg;
-	}
-	public int getErrno() {
-		return errno;
-	}
-	public void setErrno(int errno) {
-		this.errno = errno;
-	}
 	public byte[] getBodyContent() {
 		return bodyContent;
 	}
@@ -61,7 +62,7 @@ public class BucketResponseProcesser {
 	}
 	@Override
 	public String toString() {
-		return "ResponseProcesser [errMsg=" + errMsg + ", errno=" + errno + ", bodyContent="
+		return "ResponseProcesser [errMsg=" + ", bodyContent="
 				+ Arrays.toString(bodyContent) + ", bucketList=" + bucketList
 				+ ", responseCode=" + responseCode + ", responseMessage=" + responseMessage + ", responseHeaders="
 				+ responseHeaders + "]";

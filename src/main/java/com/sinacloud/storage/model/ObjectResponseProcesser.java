@@ -10,25 +10,26 @@ import java.util.Map;
  *
  */
 public class ObjectResponseProcesser {
-	private String errMsg;
-	private int errno;
+	/**
+	 * 返回的消息体
+	 */
 	private byte[] bodyContent;
+	/**
+	 * 返回的文件列表
+	 */
 	private List<ObjectFile> objectList;
+	/**
+	 * 返回的信息码
+	 */
 	private int responseCode;
+	/**
+	 * 返回的信息
+	 */
 	private String responseMessage;
+	/**
+	 * 返回的信息头
+	 */
 	private Map<String,List<String>> responseHeaders;
-	public String getErrMsg() {
-		return errMsg;
-	}
-	public void setErrMsg(String errMsg) {
-		this.errMsg = errMsg;
-	}
-	public int getErrno() {
-		return errno;
-	}
-	public void setErrno(int errno) {
-		this.errno = errno;
-	}
 	public byte[] getBodyContent() {
 		return bodyContent;
 	}
@@ -62,7 +63,7 @@ public class ObjectResponseProcesser {
 	}
 	@Override
 	public String toString() {
-		return "ObjectResponseProcesser [errMsg=" + errMsg + ", errno=" + errno + ", bodyContent="
+		return "ObjectResponseProcesser [errMsg=" +", bodyContent="
 				+ Arrays.toString(bodyContent) + ", objectList=" + objectList + ", responseCode=" + responseCode
 				+ ", responseMessage=" + responseMessage + "]";
 	}
