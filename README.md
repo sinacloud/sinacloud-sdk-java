@@ -16,6 +16,10 @@ Maven 项目可以通过项目的 pom.xml 直接引入依赖。
 
 如果不使用 Maven，也可以在 Maven 仓库页面直接下载 SDK 的 jar 包，拖入项目里即可使用。
 
+如果需要使用kvdb服务，使用版本1.2.1及以前的版本
+
+如不需要可以使用最新版本1.2.2-SNAPSHOT
+
 ## 使用文档
 
 - API 手册：https://javadoc.applinzi.com
