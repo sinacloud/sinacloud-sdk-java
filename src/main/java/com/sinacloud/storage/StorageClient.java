@@ -13,9 +13,11 @@ import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -588,4 +590,21 @@ public class StorageClient extends StorageBase implements Storage {
 		return false;
 	}
 
+	/**
+	 * 获取一个object临时访问的URL
+	 * 
+	 * @param bucketName bucket的名称
+	 * @param method http请求方法默认GET
+	 * @param objectName object的名称
+	 * @param seconds 存活时间，秒数
+	 * @return url
+	 */
+	public String getTempUrl(String bucketName,String method,String objectName,int seconds){
+		TimeZone.setDefault(TimeZone.getTimeZone("Asia/Shanghai"));
+		long expires = new Date().getTime()/1000+seconds;
+		String path = "/v1/SAE_"+this.appName+"/"+bucketName + "/" + objectName;
+		String sig_context = method + "\n" + expires +"\n" + URLDecoder.decode(path);
+		String sig = StorageUtils.calcSignatureNotBase64("HmacSHA1",sig_context, this.secretKey);
+		return "http://" + this.appName + "-" + bucketName + ".stor.sinaapp.com/" + objectName + "?" +"temp_url_sig=" +sig +"&" + "temp_url_expires=" + expires;
+	}
 }

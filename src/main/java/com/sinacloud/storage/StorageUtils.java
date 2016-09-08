@@ -90,7 +90,42 @@ public class StorageUtils {
 			return "";
 		}
 	}
+	
+	/**
+	 * 将指定的内容进行加密，默认采用HmacSHA1方式加密
+	 * 
+	 * @param cryptoType
+	 *            加密的类型
+	 * @param content
+	 *            需要加密的内容
+	 * @param secretKey
+	 *            加密所需的Key
+	 * @return 加密后的数据
+	 */
+	public static String calcSignatureNotBase64(String cryptoType, String content, String secretKey) {
+		try {
+			Mac mac = Mac.getInstance(cryptoType);
+			SecretKeySpec secret = new SecretKeySpec(secretKey.getBytes(), cryptoType);
+			mac.init(secret);
+			byte[] digest = mac.doFinal(content.getBytes());
+			return byte2hex(digest);
+		} catch (Exception e) {
+			logger.error("calc signature failure.", e);
+			return "";
+		}
+	}
 
+	  private static String byte2hex(final byte[] b){  
+	        String hs="";  
+	        String stmp="";  
+	        for (int n=0; n<b.length; n++){  
+	            stmp=(java.lang.Integer.toHexString(b[n] & 0xFF));  
+	            if (stmp.length()==1) hs=hs+"0"+stmp;  
+	                else hs=hs+stmp;  
+	        }  
+	        return hs;  
+	    }     
+	
 	/**
 	 * 对指定内容进行BASE64编码
 	 * 
