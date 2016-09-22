@@ -8,7 +8,7 @@ import org.junit.Test;
 public class StroageClientTest{
 	
 	public static StorageClient getClient(){
-		return new StorageClient();
+		return new StorageClient("testnero3","n44mkooxxj","04my02l404wzi031j1zlxji2xz1m3h4yx1zy13y3");
 	}
 	@Test
 	public void test(){

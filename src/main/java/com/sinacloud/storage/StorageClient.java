@@ -19,7 +19,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.TimeZone;
 
-import javax.net.ssl.HttpsURLConnection;
 
 import org.apache.log4j.Logger;
 
@@ -178,16 +177,16 @@ public class StorageClient extends StorageBase implements Storage {
 	 * @param method 方法
 	 * @param path storage的domain路径 url的"_"之后的部分
 	 * @param propMap 需要额外在头部添加的属性
-	 * @return HttpsURLConnection
+	 * @return HttpURLConnection
 	 * @throws MalformedURLException IOException
 	 */
-	private HttpsURLConnection getConnection(String url , int timeout, String method,String path,Map<String,String> propMap){
-		HttpsURLConnection conn = null;
+	private HttpURLConnection getConnection(String url , int timeout, String method,String path,Map<String,String> propMap){
+		HttpURLConnection conn = null;
 		URL _url = null;
 		int code = 0;
 		try {
 			_url = new URL(url);
-			conn = (HttpsURLConnection)_url.openConnection();
+			conn = (HttpURLConnection)_url.openConnection();
 			conn.setConnectTimeout(timeout);
 			conn.setRequestMethod(method);
 			if(propMap != null && propMap.size() != 0){
@@ -230,7 +229,7 @@ public class StorageClient extends StorageBase implements Storage {
 	 * @return BucketResponseProcesser
 	 * @throws IOException
 	 */
-	private BucketResponseProcesser doBucketOperation(HttpsURLConnection conn) throws IOException{
+	private BucketResponseProcesser doBucketOperation(HttpURLConnection conn) throws IOException{
 		return doBucketOperation(conn,null);
 	}
 	
@@ -250,7 +249,7 @@ public class StorageClient extends StorageBase implements Storage {
 	 * @return BucketResponseProcesser
 	 * @throws IOException
 	 */
-	private BucketResponseProcesser doBucketOperation(HttpsURLConnection conn,String bucketName) throws IOException{
+	private BucketResponseProcesser doBucketOperation(HttpURLConnection conn,String bucketName) throws IOException{
 		BucketResponseProcesser bucketResponseProcesser = new BucketResponseProcesser();
 		conn.connect();
 		if(conn.getRequestMethod() != PUT && conn.getRequestMethod() != DELETE){
@@ -324,7 +323,7 @@ public class StorageClient extends StorageBase implements Storage {
 	public boolean createBucket(String bucketName) {
 		checkParameter(bucketName);
 		String url = baseurl + this.appName + "/" + bucketName + "/";
-		HttpsURLConnection conn = getConnection(url, internal_timeout, PUT, getPath(url), null);
+		HttpURLConnection conn = getConnection(url, internal_timeout, PUT, getPath(url), null);
 		BucketResponseProcesser responseProcesser = null;
 		try {
 			responseProcesser = doBucketOperation(conn,bucketName);
@@ -355,7 +354,7 @@ public class StorageClient extends StorageBase implements Storage {
 	public Bucket getBucketInfo(String bucketName){
 		checkParameter(bucketName);
 		String url = baseurl + this.appName + "/" + bucketName + "/";
-		HttpsURLConnection conn = getConnection(url, internal_timeout,HEAD, getPath(url), null);
+		HttpURLConnection conn = getConnection(url, internal_timeout,HEAD, getPath(url), null);
 		BucketResponseProcesser bucketResponseProcesser = null;
 		try {
 			bucketResponseProcesser = doBucketOperation(conn,bucketName);
@@ -374,7 +373,7 @@ public class StorageClient extends StorageBase implements Storage {
 	@Override
 	public BucketList listBuckets() {
 		String url = baseurl+this.appName + "/";
-		HttpsURLConnection conn = getConnection(url, internal_timeout, GET, getPath(url), null);
+		HttpURLConnection conn = getConnection(url, internal_timeout, GET, getPath(url), null);
 		BucketResponseProcesser bucketResponseProcesser = null;
 		BucketList bl = new BucketList();
 		try{
@@ -447,7 +446,7 @@ public class StorageClient extends StorageBase implements Storage {
 		checkParameter(bucketName);
 		String url  = baseurl+this.appName+"/"+bucketName+"/";
 		BucketResponseProcesser bucketResponseProcesser = null;
-		HttpsURLConnection conn = getConnection(url, internal_timeout, DELETE, getPath(url), null);
+		HttpURLConnection conn = getConnection(url, internal_timeout, DELETE, getPath(url), null);
 		try {
 			bucketResponseProcesser = doBucketOperation(conn);
 			if(bucketResponseProcesser.getResponseCode() == 204){
