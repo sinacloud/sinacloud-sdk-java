@@ -295,8 +295,8 @@ public class StorageClient extends StorageBase implements Storage {
 			conn.setDoOutput(true);
 			conn.setDoInput(true);
 			conn.setUseCaches(false);
-			conn.setRequestProperty("Content-Type",
-					"multipart/form-data; boundary=" + BOUNDARY);
+//			conn.setRequestProperty("Content-Type",
+//					"multipart/form-data; boundary=" + BOUNDARY);
 			OutputStream out = new DataOutputStream(conn.getOutputStream());
 			out.write(content);
 			out.close();
@@ -525,7 +525,7 @@ public class StorageClient extends StorageBase implements Storage {
 			fis.close();
 			bos.close();
 			byte[] content = bos.toByteArray();
-			return putObjectFile(bucketName,fileName,content,map);
+			return putObjectFile(bucketName.trim(),fileName,content,map);
 		} catch (FileNotFoundException e) {
 			logger.error(ERROR_MSG_301);
 			throw new RuntimeException(ERROR_MSG_301);
