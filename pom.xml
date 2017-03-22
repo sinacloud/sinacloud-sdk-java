@@ -3,7 +3,7 @@
 
 	<groupId>com.sinacloud.java</groupId>
 	<artifactId>java-sdk</artifactId>
-	<version>1.2.3-SNAPSHOT</version>
+	<version>1.2.3</version>
 	<packaging>jar</packaging>
 
 	<name>java-sdk</name>
